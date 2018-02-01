@@ -34,7 +34,6 @@ var sslOptions = {
   passphrase: String(fs.readFileSync('passphrase.txt'))
 };
 
-var secret = String(fs.readFileSync('secret.txt'));
 
 app.use(bodyParser.json());
 
@@ -87,17 +86,38 @@ function readFactory(url, model){
 
 
 // Authentication
-app.post('/user/', function(req, res, next){
-  if(req.body.secret != secret){
-    res.status(500).send({success: false});
-    next();
-    return;
-  }
+function checkUserToken(token){
+  const tokensfile = 'usertokens.txt'
+  try {
+    // read tokens
+    var allowed_tokens = String(fs.readFileSync(tokensfile)).split('\n');
+    // is token?
+    const i = allowed_tokens.indexOf(token);
+    if(i == -1) return false;
+    // remove (one use only)
+    allowed_tokens.splice(i,1)
+    // rewrite file without the used token
+    fs.writeFile(tokensfile, allowed_tokens.join('\n'), (err) => {  
+      if (err) throw err;
+      console.log('Tokens saved!');
+    });
 
+    return true;
+  }
+  catch(err){ return false }  // no auth if something goes wrong
+}
+
+app.post('/user/:token/', function(req, res, next){
+  if(!checkUserToken(req.params.token)){
+      res.status(401).send({success: false});
+      next();
+      return;
+  }
+  
   let user = new UserModel(req.body);
   user.save(function(err, dataObject){  
     if (err) {
-        res.status(500).send({success: false});
+        res.status(401).send({success: false});
     }
     res.status(200).send({success: true, user: dataObject._id, token: dataObject.token});
   });
