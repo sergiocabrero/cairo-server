@@ -2,8 +2,32 @@
 var mongoose = require('mongoose');
 var Schema = mongoose.Schema;
 const randToken = require('rand-token')
+var BeaconSchema = new Schema({
+  date_registered: {
+    type: Date,
+    default: Date.now
+  },
+  date: {
+    type: Date,
+    required: 'Date when captured'
+  },
+  user: {
+    type: String,
+    required: 'User',
+  },
+  beacon: {
+    type: Object,
+    required: 'Beacon data'
+  }
 
-var SensorSampleSchema = new Schema({
+});
+
+var Beacon = mongoose.model('Beacon', BeaconSchema);
+module.exports = Beacon;
+
+
+
+var NearableSampleSchema = new Schema({
   uuid: {
     type: String,
     required: 'Sensor uuid'
@@ -61,7 +85,7 @@ var SensorSampleSchema = new Schema({
 
 });
 
-var SensorSample = mongoose.model('SensorSample', SensorSampleSchema);
+var SensorSample = mongoose.model('SensorSample', NearableSampleSchema);
 module.exports = SensorSample;
 
 var SensorConfSchema = new Schema({

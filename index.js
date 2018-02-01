@@ -17,7 +17,8 @@ const models = require('./model')
 var UserModel = db.model('User'),
   SensorSampleModel = db.model('SensorSample'),
   SensorConfModel = db.model('SensorConf'),
-  ActivityModel = db.model('Activity');
+  ActivityModel = db.model('Activity'), 
+  BeaconModel = db.model('Beacon');
 
 // Express app
 var https = require('https');
@@ -133,24 +134,25 @@ function authenticateRequest(req, next){
   });
 }
 
-readFactory('/users/', UserModel)
+readFactory('/users/', UserModel);
 
 // Data getters and setters
 
-setFactory('/sample/', SensorSampleModel)
-readFactory('/samples/', SensorSampleModel)
+setFactory('/sample/', SensorSampleModel);
+readFactory('/samples/', SensorSampleModel);
 
-setFactory('/config/', SensorConfModel)
-readFactory('/configs/', SensorConfModel)
+setFactory('/config/', SensorConfModel);
+readFactory('/configs/', SensorConfModel);
 
-setFactory('/activity/', ActivityModel)
-readFactory('/activities/', ActivityModel)
+setFactory('/activity/', ActivityModel);
+readFactory('/activities/', ActivityModel);
 
-
+setFactory('/beacon/', BeaconModel);
+readFactory('/beacon/', BeaconModel);
 
 // RUN
 // app.listen(port);
 https.createServer(sslOptions, app).listen(port);
 
 
-console.log('Cairo REST Data Server running in port '+port)
+console.log('Cairo REST Data Server running in port '+port);
