@@ -12,7 +12,7 @@ db.once('open', function() {
   console.log('Connected to MongoDB!')
 });
 
-// Load models
+// Load moongose
 const models = require('./model')
 var UserModel = db.model('User'),
   SensorSampleModel = db.model('SensorSample'),
@@ -28,15 +28,33 @@ var express = require('express'),
   app = express(),
   port = process.env.PORT || 3000;
 
-  
+// parse requests with json content
+app.use(bodyParser.json());
+
+
+
+// certbot
+/*
+// This is needed to validate the certificate with certbot, together with creating the route static/.well-known/acme-challenge
+app.use(express.static('static'));
+app.listen(80);
+*/
+
+// sslOptions once certificates have been obtained, using: sudo certbot certonly --webroot -w ./static -d <domain>
+
 var sslOptions = {
-  key: fs.readFileSync('key.pem'),
-  cert: fs.readFileSync('cert.pem'),
-  passphrase: String(fs.readFileSync('passphrase.txt'))
+  cert: fs.readFileSync('/etc/letsencrypt/live/cairoapp.5gnetwork-cwi.surf-hosted.nl/fullchain.pem'),
+  key: fs.readFileSync('/etc/letsencrypt/live/cairoapp.5gnetwork-cwi.surf-hosted.nl/privkey.pem')
 };
 
 
-app.use(bodyParser.json());
+// self-signed certs (use generateServerCertificate.sh)
+// var sslOptions = {
+//   key: fs.readFileSync('key.pem'),
+//   cert: fs.readFileSync('cert.pem'),
+//   passphrase: String(fs.readFileSync('passphrase.txt'))
+// };
+
 
 
 
@@ -84,6 +102,7 @@ function readFactory(url, model){
     });
   });
 }
+
 
 
 // Authentication
@@ -134,24 +153,49 @@ function authenticateRequest(req, next){
   });
 }
 
-readFactory('/users/', UserModel);
+// readFactory('/users/', UserModel);
 
 // Data getters and setters
 
-setFactory('/sample/', SensorSampleModel);
-readFactory('/samples/', SensorSampleModel);
+// setFactory('/sample/', SensorSampleModel);
+// readFactory('/samples/', SensorSampleModel);
 
-setFactory('/config/', SensorConfModel);
-readFactory('/configs/', SensorConfModel);
+// setFactory('/config/', SensorConfModel);
+// readFactory('/configs/', SensorConfModel);
 
-setFactory('/activity/', ActivityModel);
-readFactory('/activities/', ActivityModel);
+// setFactory('/activity/', ActivityModel);
+// readFactory('/activities/', ActivityModel);
 
-setFactory('/beacon/', BeaconModel);
-readFactory('/beacon/', BeaconModel);
+// setFactory('/beacon/', BeaconModel);
+// readFactory('/beacon/', BeaconModel);
+
+// used for testing: 
+
+app.post('/echo/', function(req, res, next) {
+  // authenticateRequest(req, function(authenticated){
+  //   if(!authenticated)
+  //   {
+  //     res.status(500).send({success: false});
+  //     return;
+  //   }
+
+
+  console.log(req.body)
+  res.status(200).send(req.body);
+  return
+});
+
+app.post('/samples/:user/', function(req, res, next) {
+  console.log(req.body)
+  console.log(req.param.user)
+  res.status(200).send({success=true});
+  return
+});
+
+
+
 
 // RUN
-// app.listen(port);
 https.createServer(sslOptions, app).listen(port);
 
 
